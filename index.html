@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Risk Predictor | Advanced Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script>
+    <style>
+        .risk-low { background-color: #4CAF50; color: white; }
+        .risk-medium { background-color: #FFC107; color: #333; }
+        .risk-high { background-color: #F44336; color: white; }
+        .input-card { transition: all 0.3s ease; }
+        .input-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .tab-active { border-bottom: 3px solid #3B82F6; font-weight: 600; }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                    <i class="fas fa-bug"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">Malaria Risk Predictor</h1>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#calculator" class="text-blue-600 font-medium">Calculator</a>
+                <a href="#bmi" class="text-gray-600 hover:text-blue-600">BMI Tool</a>
+                <a href="#about" class="text-gray-600 hover:text-blue-600">About Malaria</a>
+            </nav>
+            <button class="md:hidden text-gray-600">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-blue-500 to-blue-700 text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-4">Malaria Risk Assessment Tool</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Analyze environmental factors to predict malaria risk with our advanced algorithm</p>
+            <a href="#calculator" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition duration-300 inline-block">
+                Try the Calculator <i class="fas fa-arrow-down ml-2"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section id="calculator" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Malaria Risk Calculator</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Enter environmental data to assess malaria risk probability</p>
+            </div>
+
+            <div class="flex flex-wrap -mx-4">
+                <!-- Input Form -->
+                <div class="w-full lg:w-1/2 px-4 mb-8 lg:mb-0">
+                    <div class="bg-white rounded-xl shadow-md p-6 input-card">
+                        <div class="flex border-b mb-6">
+                            <button id="singleTab" class="px-4 py-2 tab-active">Single Input</button>
+                            <button id="batchTab" class="px-4 py-2">Batch Input</button>
+                        </div>
+
+                        <!-- Single Input Form -->
+                        <div id="singleForm">
+                            <div class="mb-6">
+                                <label class="block text-gray-700 mb-2">Temperature (°C)</label>
+                                <input type="number" id="A" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="18-27°C">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 mb-2">Rainfall (mm)</label>
+                                <input type="number" id="B" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="100-250mm">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 mb-2">NDVI (Shrubs) (Sq.km)</label>
+                                <input type="number" id="C" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="150-550 Sq.km">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 mb-2">NDVI (Healthy Vegetation) (Sq.km)</label>
+                                <input type="number" id="D" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="50-225 Sq.km">
+                            </div>
+                            <div class="mb-8">
+                                <label class="block text-gray-700 mb-2">Water Bodies Drainage (km)</label>
+                                <input type="number" step="0.1" id="E" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0.5-5 km">
+                            </div>
+                            <button onclick="Operations()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-300">
+                                Calculate Risk <i class="fas fa-calculator ml-2"></i>
+                            </button>
+                        </div>
+
+                        <!-- Batch Input Form -->
+                        <div id="batchForm" class="hidden">
+                            <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                                <p class="text-blue-800 mb-3"><i class="fas fa-info-circle mr-2"></i>Upload an Excel file with columns for each parameter:</p>
+                                <ul class="list-disc pl-5 text-blue-800">
+                                    <li>Temperature (°C)</li>
+                                    <li>Rainfall (mm)</li>
+                                    <li>NDVI (Shrubs)</li>
+                                    <li>NDVI (Healthy Vegetation)</li>
+                                    <li>Water Bodies Drainage</li>
+                                </ul>
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-gray-700 mb-2">Upload Excel File</label>
+                                <div class="flex items-center">
+                                    <input type="file" id="file_upload" accept=".xlsx" class="flex-grow px-4 py-2 border rounded-lg">
+                                    <button onclick="upload()" class="ml-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-300">
+                                        Upload <i class="fas fa-upload ml-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="outputDiv" class="overflow-x-auto"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="w-full lg:w-1/2 px-4">
+                    <div class="bg-white rounded-xl shadow-md p-6 h-full">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Risk Assessment Results</h3>
+                        
+                        <div id="resultContainer" class="hidden">
+                            <div class="mb-6 p-4 rounded-lg" id="out">
+                                <p class="text-lg font-medium" id="resultText"></p>
+                                <div class="mt-4">
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div id="riskBar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                    </div>
+                                    <div class="flex justify-between mt-1 text-sm text-gray-600">
+                                        <span>Low</span>
+                                        <span>Medium</span>
+                                        <span>High</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="precautions" class="hidden">
+                                <h4 class="font-bold text-gray-800 mb-3">Recommended Precautions</h4>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>Use insecticide-treated mosquito nets</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>Apply mosquito repellent containing DEET</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>Wear long-sleeved clothing during peak mosquito hours</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span>Eliminate standing water around your home</span>
+                                    </li>
+                                </ul>
+                                <a href="https://www.who.int/news-room/fact-sheets/detail/malaria" target="_blank" class="mt-4 inline-block text-blue-600 hover:underline">
+                                    Learn more about malaria prevention <i class="fas fa-external-link-alt ml-1"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div id="emptyState" class="text-center py-12">
+                            <i class="fas fa-calculator text-4xl text-gray-300 mb-4"></i>
+                            <h4 class="text-lg font-medium text-gray-500">No results yet</h4>
+                            <p class="text-gray-400">Enter environmental data and click "Calculate Risk" to see your malaria risk assessment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BMI Calculator Section -->
+    <section id="bmi" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">BMI Calculator</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Check your Body Mass Index to assess your weight status</p>
+            </div>
+
+            <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Height (cm)</label>
+                    <input type="number" id="height" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your height">
+                </div>
+                <div class="mb-8">
+                    <label class="block text-gray-700 mb-2">Weight (kg)</label>
+                    <input type="number" id="weight" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your weight">
+                </div>
+                <button onclick="calculateBMI()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition duration-300">
+                    Calculate BMI <i class="fas fa-weight ml-2"></i>
+                </button>
+                
+                <div id="bmiResult" class="mt-6 hidden">
+                    <div class="p-4 rounded-lg text-center">
+                        <h4 class="text-xl font-bold mb-2">Your BMI: <span id="bmiValue"></span></h4>
+                        <p class="text-lg" id="bmiCategory"></p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4">
+                            <div id="bmiBar" class="h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 text-sm text-gray-600">
+                            <span>Underweight</span>
+                            <span>Normal</span>
+                            <span>Overweight</span>
+                            <span>Obese</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Malaria Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">About Malaria</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Key facts and prevention information</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-blue-50 p-6 rounded-xl">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
+                        <i class="fas fa-info-circle text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-3">What is Malaria?</h3>
+                    <p class="text-gray-600">Malaria is a life-threatening disease caused by parasites transmitted through the bites of infected female Anopheles mosquitoes. It is preventable and curable.</p>
+                </div>
+                <div class="bg-green-50 p-6 rounded-xl">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-4">
+                        <i class="fas fa-syringe text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-3">Prevention</h3>
+                    <p class="text-gray-600">Key prevention methods include insecticide-treated mosquito nets, indoor residual spraying, and antimalarial medications for travelers to high-risk areas.</p>
+                </div>
+                <div class="bg-red-50 p-6 rounded-xl">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center text-red-600 mb-4">
+                        <i class="fas fa-globe-africa text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-3">Global Impact</h3>
+                    <p class="text-gray-600">In 2022, there were an estimated 247 million cases of malaria worldwide with 619,000 deaths. The WHO African Region carries a disproportionately high share of the global malaria burden.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-8 md:mb-0">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white mr-3">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">Malaria Risk Predictor</h3>
+                    </div>
+                    <p class="text-gray-400 max-w-xs">An advanced tool for predicting malaria risk based on environmental factors.</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
+                    <div>
+                        <h4 class="font-bold mb-4">Resources</h4>
+                        <ul class="space-y-2">
+                            <li><a href="https://www.who.int/malaria" target="_blank" class="text-gray-400 hover:text-white transition">WHO Malaria</a></li>
+                            <li><a href="https://www.cdc.gov/malaria" target="_blank" class="text-gray-400 hover:text-white transition">CDC Malaria</a></li>
+                            <li><a href="https://www.nhs.uk/conditions/malaria" target="_blank" class="text-gray-400 hover:text-white transition">NHS Information</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4">Tools</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#calculator" class="text-gray-400 hover:text-white transition">Risk Calculator</a></li>
+                            <li><a href="#bmi" class="text-gray-400 hover:text-white transition">BMI Calculator</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold mb-4">About</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#about" class="text-gray-400 hover:text-white transition">Malaria Facts</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2023 Malaria Risk Predictor. This tool is for educational purposes only.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching
+        document.getElementById('singleTab').addEventListener('click', function() {
+            document.getElementById('singleForm').classList.remove('hidden');
+            document.getElementById('batchForm').classList.add('hidden');
+            document.getElementById('singleTab').classList.add('tab-active');
+            document.getElementById('batchTab').classList.remove('tab-active');
+        });
+
+        document.getElementById('batchTab').addEventListener('click', function() {
+            document.getElementById('singleForm').classList.add('hidden');
+            document.getElementById('batchForm').classList.remove('hidden');
+            document.getElementById('singleTab').classList.remove('tab-active');
+            document.getElementById('batchTab').classList.add('tab-active');
+        });
+
+        // Malaria Calculator Functions
+        function Operations() {
+            let inA = parseInt(document.getElementById("A").value);
+            let inB = parseInt(document.getElementById("B").value);
+            let inC = parseInt(document.getElementById("C").value);
+            let inD = parseInt(document.getElementById("D").value);
+            let inE = parseFloat(document.getElementById("E").value);
+
+            let count = 0;
+
+            if (inA >= 18 && inA <= 27) count++;
+            if (inB >= 100 && inB <= 250) count++;
+            if (inC >= 150 && inC <= 550) count++;
+            if (inD >= 50 && inD <= 225) count++;
+            if (inE >= 0.5 && inE <= 5) count++;
+
+            let probability = (count / 5) * 100;
+            probability = Math.round(probability * 10) / 10; // Round to 1 decimal place
+
+            // Show results container
+            document.getElementById('resultContainer').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            // Set risk level
+            let riskClass = '';
+            if (count > 3) {
+                riskClass = 'risk-high';
+                document.getElementById('out').className = 'mb-6 p-4 rounded-lg risk-high';
+                document.getElementById('resultText').textContent = `High Risk: There is a ${probability}% chance of malaria presence in this environment.`;
+                document.getElementById('riskBar').className = 'h-2.5 rounded-full bg-red-600';
+                document.getElementById('riskBar').style.width = '100%';
+                document.getElementById('precautions').classList.remove('hidden');
+            } else if (count == 0) {
+                riskClass = 'risk-low';
+                document.getElementById('out').className = 'mb-6 p-4 rounded-lg risk-low';
+                document.getElementById('resultText').textContent = `Low Risk: Only ${probability}% chance of malaria presence. Environment appears safe.`;
+                document.getElementById('riskBar').className = 'h-2.5 rounded-full bg-green-600';
+                document.getElementById('riskBar').style.width = '25%';
+                document.getElementById('precautions').classList.add('hidden');
+            } else {
+                riskClass = 'risk-medium';
+                document.getElementById('out').className = 'mb-6 p-4 rounded-lg risk-medium';
+                document.getElementById('resultText').textContent = `Medium Risk: There is a ${probability}% chance of malaria presence. Caution advised.`;
+                document.getElementById('riskBar').className = 'h-2.5 rounded-full bg-yellow-400';
+                document.getElementById('riskBar').style.width = '65%';
+                document.getElementById('precautions').classList.remove('hidden');
+            }
+        }
+
+        // Excel Upload Functions
+        function upload() {
+            var files = document.getElementById('file_upload').files;
+            if (files.length == 0) {
+                alert("Please select a file first.");
+                return;
+            }
+            var filename = files[0].name;
+            var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+            if (extension == '.XLS' || extension == '.XLSX') {
+                excelFileToJSON(files[0]);
+            } else {
+                alert("Please select a valid Excel file.");
+            }
+        }
+
+        function excelFileToJSON(file) {
+            try {
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+                reader.onload = function(e) {
+                    var data = e.target.result;
+                    var workbook = XLSX.read(data, { type: 'binary' });
+                    var result = {};
+                    workbook.SheetNames.forEach(function(sheetName) {
+                        var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+                        if (roa.length > 0) {
+                            result[sheetName] = roa;
+                        }
+                    });
+                    
+                    // Process the data and display results
+                    OperationWithExcel(result);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error processing file. Please check the format and try again.");
+            }
+        }
+
+        function OperationWithExcel(result) {
+            var jsonData = result.Sheet1; // Assuming the sheet name is "Sheet1"
+            var outputDiv = document.getElementById("outputDiv");
+            outputDiv.innerHTML = ""; // Clear previous results
+
+            if (!jsonData || jsonData.length === 0) {
+                outputDiv.innerHTML = "<p class='text-red-500'>No valid data found in the Excel sheet.</p>";
+                return;
+            }
+
+            // Create table
+            var table = document.createElement("table");
+            table.className = "min-w-full divide-y divide-gray-200";
+
+            // Create header
+            var thead = document.createElement("thead");
+            var headerRow = document.createElement("tr");
+            
+            // Add existing headers
+            Object.keys(jsonData[0]).forEach(function(header) {
+                var th = document.createElement("th");
+                th.className = "px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            
+            // Add result header
+            var th = document.createElement("th");
+            th.className = "px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider";
+            th.textContent = "Risk Assessment";
+            headerRow.appendChild(th);
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create body
+            var tbody = document.createElement("tbody");
+            tbody.className = "bg-white divide-y divide-gray-200";
+
+            jsonData.forEach(function(rowData, index) {
+                var row = document.createElement("tr");
+                row.className = index % 2 === 0 ? "bg-white" : "bg-gray-50";
+
+                // Add existing data
+                Object.values(rowData).forEach(function(cellData) {
+                    var td = document.createElement("td");
+                    td.className = "px-6 py-4 whitespace-nowrap text-sm text-gray-500";
+                    td.textContent = cellData;
+                    row.appendChild(td);
+                });
+
+                // Add result cell
+                var resultCell = document.createElement("td");
+                resultCell.className = "px-6 py-4 whitespace-nowrap text-sm font-medium";
+                
+                var result = Operation(rowData);
+                resultCell.textContent = result.split(":")[1].trim(); // Just show the result part
+                
+                // Color code based on risk
+                if (result.includes("High Risk")) {
+                    resultCell.className += " text-red-600";
+                } else if (result.includes("Medium Risk")) {
+                    resultCell.className += " text-yellow-600";
+                } else {
+                    resultCell.className += " text-green-600";
+                }
+                
+                row.appendChild(resultCell);
+                tbody.appendChild(row);
+            });
+
+            table.appendChild(tbody);
+            outputDiv.appendChild(table);
+        }
+
+        function Operation(rowData) {
+            // Extract data with case-insensitive field names
+            let inA = parseFloat(rowData["Temperature"] || rowData["temperature"] || 0);
+            let inB = parseFloat(rowData["Rainfall"] || rowData["rainfall"] || 0);
+            let inC = parseFloat(rowData["NDVI (Shrubs)"] || rowData["NDVI Shrubs"] || rowData["ndvi_shrubs"] || 0);
+            let inD = parseFloat(rowData["NDVI (Healthy Vegetation)"] || rowData["NDVI Healthy Vegetation"] || rowData["ndvi_healthy_veg"] || 0);
+            let inE = parseFloat(rowData["Water Bodies Drainage"] || rowData["water_drainage"] || 0);
+
+            let count = 0;
+
+            if (inA >= 18 && inA <= 27) count++;
+            if (inB >= 100 && inB <= 250) count++;
+            if (inC >= 150 && inC <= 550) count++;
+            if (inD >= 50 && inD <= 225) count++;
+            if (inE >= 0.5 && inE <= 5) count++;
+
+            let probability = (count / 5) * 100;
+            probability = Math.round(probability * 10) / 10; // Round to 1 decimal place
+
+            if (count > 3) {
+                return `High Risk: ${probability}% chance of malaria`;
+            } else if (count === 0) {
+                return `Low Risk: ${probability}% chance of malaria`;
+            } else {
+                return `Medium Risk: ${probability}% chance of malaria`;
+            }
+        }
+
+        // BMI Calculator Functions
+        function calculateBMI() {
+            const height = parseFloat(document.getElementById('height').value) / 100; // Convert cm to m
+            const weight = parseFloat(document.getElementById('weight').value);
+            
+            if (isNaN(height) || isNaN(weight) || height <= 0 || weight <= 0) {
+                alert("Please enter valid height and weight values.");
+                return;
+            }
+            
+            const bmi = weight / (height * height);
+            const roundedBMI = bmi.toFixed(1);
+            
+            document.getElementById('bmiResult').classList.remove('hidden');
+            document.getElementById('bmiValue').textContent = roundedBMI;
+            
+            let category = '';
+            let barColor = '';
+            let barWidth = 0;
+            
+            if (bmi < 18.5) {
+                category = 'Underweight';
+                barColor = 'bg-blue-400';
+                barWidth = 25;
+            } else if (bmi >= 18.5 && bmi < 25) {
+                category = 'Normal weight';
+                barColor = 'bg-green-500';
+                barWidth = 50;
+            } else if (bmi >= 25 && bmi < 30) {
+                category = 'Overweight';
+                barColor = 'bg-yellow-500';
+                barWidth = 75;
+            } else {
+                category = 'Obese';
+                barColor = 'bg-red-600';
+                barWidth = 100;
+            }
+            
+            document.getElementById('bmiCategory').textContent = category;
+            document.getElementById('bmiBar').className = `h-2.5 rounded-full ${barColor}`;
+            document.getElementById('bmiBar').style.width = `${barWidth}%`;
+        }
+    </script>
+</body>
+</html>
